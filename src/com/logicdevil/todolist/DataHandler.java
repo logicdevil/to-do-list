@@ -2,8 +2,11 @@ package com.logicdevil.todolist;
 
 import javax.swing.*;
 import java.awt.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 /**
  * Created by daymond on 7/26/17.
@@ -11,8 +14,11 @@ import java.time.format.DateTimeFormatter;
 public class DataHandler {
 
 
-    JPanel getTaskListPanel() {
-        return null;
+    ArrayList<Task> getTaskList() {
+        ArrayList<Task> tasks = new ArrayList<>();
+        tasks.add(new Task("Something", "Some text", LocalDate.of(2017,12,21),
+                LocalTime.of(10, 20), 5, "One time", false));
+        return tasks;
     }
 
     void updateDateTime(Component component) {
