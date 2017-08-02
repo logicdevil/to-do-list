@@ -1,6 +1,7 @@
 package com.logicdevil.todolist;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -14,40 +15,67 @@ public class MainPanel extends JPanel {
     private JPanel centerPanel;
     MainPanel(DataHandler dH) {
         setLayout(new BorderLayout());
-        createTopPanel(dH);
-        createBottomPanel(dH);
-        createCenterPanel(dH);
-        add(topPanel, BorderLayout.NORTH);
-        add(centerPanel, BorderLayout.CENTER);
-        add(bottomPanel, BorderLayout.SOUTH);
+        add(createTopPanel(dH), BorderLayout.NORTH);
+        add(createCenterPanel(dH), BorderLayout.CENTER);
+        add(createBottomPanel(dH), BorderLayout.SOUTH);
     }
-    private void createCenterPanel(DataHandler dH) {
-        centerPanel = new JPanel();
-        centerPanel.setBackground(new Color(50, 50, 50));
+    private JPanel createCenterPanel(DataHandler dH) {
+        centerPanel = new JPanel(new BorderLayout());
         centerPanel.setBorder(BorderFactory.createMatteBorder(2,0,2,0, new Color(30,30,30)));
-        JPanel panelForScrolling = new JPanel();
-        panelForScrolling.setLayout(new BoxLayout(panelForScrolling, BoxLayout.Y_AXIS));
+        JPanel panelForScrolling = new JPanel(new GridBagLayout());
+        panelForScrolling.setBackground(new Color(50, 50, 50));
+        panelForScrolling.setBorder(BorderFactory.createEmptyBorder(5,18,5,0));
+        GridBagConstraints c = new GridBagConstraints();
         ArrayList<Task> tasks = dH.getTaskList();
         int i = 1;
+        c.gridy = 0;
         for (Task t: tasks) {
-            JLabel label = new JLabel("" + i++);
-            label.setFont(new Font("Serif", Font.PLAIN, 14));
-            label.setForeground(new Color(150,150,150));
-            panelForScrolling.add(label);
+            String text = (i++ + ". " + t.getTitle());
+            JLabel labelTask = new JLabel(text);
+            labelTask.setFont(new Font("Serif", Font.PLAIN, 15));
+            labelTask.setForeground(new Color(150,150,150));
+            labelTask.setPreferredSize(new Dimension(300,1));
+            labelTask.setBorder(BorderFactory.createEmptyBorder(0,0,0,30));
+            String toolTipText = dH.getToolTipText(t);
+            labelTask.setToolTipText(toolTipText);
+            JLabel labelTime = new JLabel(t.getTime());
+            labelTime.setFont(new Font("Serif", Font.PLAIN, 15));
+            labelTime.setForeground(new Color(150,150,150));
+            JCheckBox checkBox = new JCheckBox("", false);
+            checkBox.setBorder(BorderFactory.createEmptyBorder(0,0,0,-5));
+            checkBox.setToolTipText("Note if the task is complete");
+            checkBox.setOpaque(false);
+            c.insets = ((i-1) == tasks.size()) ? new Insets(0, 0, 5, 0) : new Insets(0, 0, 6, 0);
+            c.weightx = 3;
+            c.fill = GridBagConstraints.BOTH;
+            c.gridx = 0;
+            c.anchor = GridBagConstraints.NORTHEAST;
+            panelForScrolling.add(labelTask, c);
+            c.weightx = 1.5;
+            c.gridx = 1;
+            panelForScrolling.add(labelTime, c);
+            c.gridx = 2;
+            c.weightx = 1;
+            panelForScrolling.add(checkBox, c);
+            c.gridy++;
         }
-
-
-
-
-
-
-
-        JScrollPane scrollPane = new JScrollPane(panelForScrolling,
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-
-        centerPanel.add(scrollPane);
+        if(tasks.size() == 0) {
+            JLabel label = new JLabel("Today there are no tasks", JLabel.CENTER);
+            label.setFont(new Font("Serif", Font.PLAIN, 15));
+            label.setForeground(new Color(150,150,150));
+            c.fill = GridBagConstraints.BOTH;
+            c.gridx = 0;
+            panelForScrolling.add(label, c);
+        }
+       JScrollPane scrollPane = new JScrollPane(panelForScrolling,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getVerticalScrollBar().setUnitIncrement(9);
+        scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0,0));
+        centerPanel.add(scrollPane, BorderLayout.CENTER);
+        return centerPanel;
     }
-    private void createTopPanel(DataHandler dataHandler) {
+    private JPanel createTopPanel(DataHandler dataHandler) {
         topPanel = new JPanel();
         topPanel.setBackground(new Color(50, 50, 50));
         DateTimeFormatter format = DateTimeFormatter.ofPattern("dd.MM.yyyy    HH:mm");
@@ -55,8 +83,9 @@ public class MainPanel extends JPanel {
         label.setFont(new Font("Serif", Font.BOLD, 45));
         label.setForeground(new Color(150,150,150));
         topPanel.add(label);
+        return topPanel;
     }
-    private void createBottomPanel(DataHandler dH) {
+    private JPanel createBottomPanel(DataHandler dH) {
         bottomPanel = new JPanel(new GridBagLayout());
         bottomPanel.setBackground(new Color(50,50,50));
         MainButton newTask = new MainButton("Create new task");
@@ -86,6 +115,7 @@ public class MainPanel extends JPanel {
         c.anchor = GridBagConstraints.NORTHEAST;
         c.insets = new Insets(10, 20, 10, 0);
         bottomPanel.add(label, c);
+        return bottomPanel;
     }
     void updateDateTime(DataHandler dH) {
         dH.updateDateTime(topPanel.getComponent(0));
