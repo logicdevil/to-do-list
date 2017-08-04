@@ -1,6 +1,10 @@
 package com.logicdevil.todolist;
 
 import javax.swing.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -43,4 +47,6 @@ public class ToDoList {
     void loop() {
         mainPanel.updateDateTime(dH);
     }
+
+
 }

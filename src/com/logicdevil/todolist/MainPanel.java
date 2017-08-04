@@ -22,6 +22,7 @@ public class MainPanel extends JPanel {
     private JPanel createCenterPanel(DataHandler dH) {
         centerPanel = new JPanel(new BorderLayout());
         centerPanel.setBorder(BorderFactory.createMatteBorder(2,0,2,0, new Color(30,30,30)));
+        centerPanel.setBackground(new Color(50, 50, 50));
         JPanel panelForScrolling = new JPanel(new GridBagLayout());
         panelForScrolling.setBackground(new Color(50, 50, 50));
         panelForScrolling.setBorder(BorderFactory.createEmptyBorder(5,18,5,0));
@@ -42,7 +43,7 @@ public class MainPanel extends JPanel {
             labelTime.setFont(new Font("Serif", Font.PLAIN, 15));
             labelTime.setForeground(new Color(150,150,150));
             JCheckBox checkBox = new JCheckBox("", false);
-            checkBox.setBorder(BorderFactory.createEmptyBorder(0,0,0,-5));
+            checkBox.setBorder(BorderFactory.createEmptyBorder(0,0,0,-10));
             checkBox.setToolTipText("Note if the task is complete");
             checkBox.setOpaque(false);
             c.insets = ((i-1) == tasks.size()) ? new Insets(0, 0, 5, 0) : new Insets(0, 0, 6, 0);
@@ -72,7 +73,8 @@ public class MainPanel extends JPanel {
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getVerticalScrollBar().setUnitIncrement(9);
         scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0,0));
-        centerPanel.add(scrollPane, BorderLayout.CENTER);
+        scrollPane.setOpaque(false);
+        centerPanel.add(scrollPane, BorderLayout.PAGE_START);
         return centerPanel;
     }
     private JPanel createTopPanel(DataHandler dataHandler) {
