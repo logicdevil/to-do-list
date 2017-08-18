@@ -16,12 +16,13 @@ public class ToDoList {
     DataHandler dH;
     public static void main(String[] args) {
         ToDoList controller = new ToDoList();
+        controller.init();
         controller.run();
 
 
     }
 
-    ToDoList() {
+    void init() {
         ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
         // time to wait before showing tooltip when mouse enters component
         toolTipManager.setInitialDelay(2000);
@@ -30,13 +31,18 @@ public class ToDoList {
         toolTipManager.setDismissDelay(20000);
         // time to wait before stop immediately showing tooltip when mouse re-enters component (hard to understand)
         toolTipManager.setReshowDelay(100);
-        JFrame mainFrame = new JFrame("TODO List by  logicDevil");
+        JFrame mainFrame = new JFrame("TODO List by logicdevil");
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainFrame.setSize(500, 700);
         mainFrame.setResizable(false);
         dH = new DataHandler();
-        mainPanel = new MainPanel(dH);
-        mainFrame.add(mainPanel);
+        //mainPanel = new MainPanel(dH);
+        //mainFrame.add(mainPanel);
+
+        NewTaskPanel newTaskPanel = new NewTaskPanel();
+        mainFrame.add(newTaskPanel);
+
+
         mainFrame.setVisible(true);
     }
     void run() {

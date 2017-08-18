@@ -45,4 +45,8 @@ public class Task {
     public int getId() {
         return id;
     }
+
+    public LocalDate getDate() {
+        return date;
+    }
 }

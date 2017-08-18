@@ -1,7 +1,7 @@
 package com.logicdevil.todolist;
 
 import javax.swing.*;
-import java.awt.*;
+import java.awt.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -15,6 +15,10 @@ import java.sql.*;
 public class DataHandler {
     private ArrayList<Task> tasks;
     private ArrayList<String> birthdays;
+    private ArrayList<JCheckBox> checkBoxes;
+    /*
+    ---------------------------------Create string for tooltip text for tasks----------------------
+     */
     String getToolTipText(Task t) {
         StringBuilder s = new StringBuilder("<html>" + t.getTitle() + "<br>");
         String description = t.getDescription();
@@ -41,21 +45,27 @@ public class DataHandler {
             }
         }
         s.append("Frequency: ").append(t.getFrequency());
-        s.append(";  Priority: ").append(t.getPriority()).append("</html>");
+        s.append(";      Priority: ").append(t.getPriority()).append("</html>");
         return s.toString();
     }
+    /*
+    -------------------------------------------Update time of topPanel's label------------------------------
+     */
     void updateDateTime(Component component) {
         try {
             DateTimeFormatter format = DateTimeFormatter.ofPattern("dd.MM.yyyy    HH:mm");
             ((JLabel) component).setText(LocalDateTime.now().format(format));
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     LocalDateTime getTime() {
         return LocalDateTime.now();
     }
+    /*
+    -------------------------------------------Create string of nearest birthdays--------------------------
+     */
     String getBirthdaysString() {
         StringBuilder stringBuilder = new StringBuilder("<html>");
         LocalDate date = LocalDate.now();
@@ -64,8 +74,13 @@ public class DataHandler {
             stringBuilder.append(date.until(LocalDate.parse(s.subSequence(0,8), DateTimeFormatter.ofPattern("ddMMyyyy"))).getDays());
             stringBuilder.append(" days<br><p style='margin-top:2'>");
         }
+        if(birthdays.size() == 0)
+            stringBuilder.append("Within 30 days no birthday<br> is expected");
         return stringBuilder.toString();
     }
+    /*
+    -------------------------------------------Create array of tasks from database--------------------------
+     */
     ArrayList<Task> getTaskList() {
         tasks = new ArrayList<>();
         birthdays = new ArrayList<>();
@@ -114,7 +129,8 @@ public class DataHandler {
                     LocalDate  date = LocalDate.now();
                     switch(frequency) {
                         case "every year":
-                             date = date.plusYears(1);
+                        case "birthday":
+                            date = date.plusYears(1);
                             break;
                         case "every month":
                             date = date.plusMonths(1);
@@ -122,8 +138,12 @@ public class DataHandler {
                         case "every week":
                             date = date.plusWeeks(1);
                             break;
+                        case "every day":
+                            date = date.plusDays(1);
+                            break;
                         default:break;
                     }
+
                     String query = "INSERT INTO futureTasks (title, description, priority, frequency, day, month, year, time, isBirthday)"
                             + " values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -164,8 +184,8 @@ public class DataHandler {
 
             } else
             if (rs == null) {
-                System.out.println("failed to fetch resultset");
-                JOptionPane.showMessageDialog(null, "failed to load jdbc driver class");
+                //System.out.println("failed to fetch resultset");
+                JOptionPane.showMessageDialog(null, "failed to fetch resultset");
 
             } else {
                 //System.out.println("error while fetching results");
@@ -186,4 +206,7 @@ public class DataHandler {
         return tasks;
     }
 
+    void setCheckBoxes(ArrayList<JCheckBox> cB) {
+        checkBoxes = cB;
+    }
 }

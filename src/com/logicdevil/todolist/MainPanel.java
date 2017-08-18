@@ -1,7 +1,6 @@
 package com.logicdevil.todolist;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -19,7 +18,11 @@ public class MainPanel extends JPanel {
         add(createCenterPanel(dH), BorderLayout.CENTER);
         add(createBottomPanel(dH), BorderLayout.SOUTH);
     }
+    /*
+    --------------------------------------------Create panel with tasks-----------------------
+    */
     private JPanel createCenterPanel(DataHandler dH) {
+        ArrayList<JCheckBox> checkBoxes = new ArrayList<>();
         centerPanel = new JPanel(new BorderLayout());
         centerPanel.setBorder(BorderFactory.createMatteBorder(2,0,2,0, new Color(30,30,30)));
         centerPanel.setBackground(new Color(50, 50, 50));
@@ -58,6 +61,7 @@ public class MainPanel extends JPanel {
             c.gridx = 2;
             c.weightx = 1;
             panelForScrolling.add(checkBox, c);
+            checkBoxes.add(checkBox);
             c.gridy++;
         }
         if(tasks.size() == 0) {
@@ -68,7 +72,8 @@ public class MainPanel extends JPanel {
             c.gridx = 0;
             panelForScrolling.add(label, c);
         }
-       JScrollPane scrollPane = new JScrollPane(panelForScrolling,
+        else dH.setCheckBoxes(checkBoxes);
+        JScrollPane scrollPane = new JScrollPane(panelForScrolling,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getVerticalScrollBar().setUnitIncrement(9);
@@ -77,6 +82,9 @@ public class MainPanel extends JPanel {
         centerPanel.add(scrollPane, BorderLayout.PAGE_START);
         return centerPanel;
     }
+    /*
+    -------------------------------------Create panel with date and time----------------------------
+    */
     private JPanel createTopPanel(DataHandler dataHandler) {
         topPanel = new JPanel();
         topPanel.setBackground(new Color(50, 50, 50));
@@ -87,6 +95,9 @@ public class MainPanel extends JPanel {
         topPanel.add(label);
         return topPanel;
     }
+    /*
+    --------------------------------------Create panel with buttons and birthday's list--------------
+    */
     private JPanel createBottomPanel(DataHandler dH) {
         bottomPanel = new JPanel(new GridBagLayout());
         bottomPanel.setBackground(new Color(50,50,50));

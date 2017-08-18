@@ -1,1 +1,2 @@
-Add database, add newTaskView;
+Add listeners to buttons.
+If you start program several times, and database have not-one-time tasks - program create a new task every time. Bug.
