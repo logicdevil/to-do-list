@@ -1,6 +1,9 @@
 package com.logicdevil.todolist;
 
+import oracle.jrockit.jfr.JFR;
+
 import javax.swing.*;
+import javax.xml.crypto.Data;
 import java.awt.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,9 +16,24 @@ import java.sql.*;
  * Created by daymond on 7/26/17.
  */
 public class DataHandler {
+    private MainPanel mainPanel;
+    private NewTaskPanel newTaskPanel;
+    private JFrame mainFrame;
     private ArrayList<Task> tasks;
     private ArrayList<String> birthdays;
     private ArrayList<JCheckBox> checkBoxes;
+    public DataHandler(JFrame mF) {mainFrame = mF;}
+    void setMainPanel(MainPanel mP) {mainPanel = mP;}
+    void hideMainPanel() {mainPanel.setVisible(false);}
+    void showMainPanel() {mainPanel.setVisible(true);}
+    void addNewTaskPanelToFrame(NewTaskPanel nTP) {
+        newTaskPanel = nTP;
+        mainFrame.add(nTP);
+    }
+    void removeNewTaskPanelFromFrame() {
+        mainFrame.remove(newTaskPanel);
+        newTaskPanel = null;
+    }
     /*
     ---------------------------------Create string for tooltip text for tasks----------------------
      */

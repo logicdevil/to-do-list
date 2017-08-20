@@ -12,7 +12,9 @@ import java.awt.*;
 public class NewTaskPanel extends JPanel {
     JPanel panel;
     Color  backgroundColor, redFontColor;
-    public NewTaskPanel() {
+    DataHandler dH;
+    public NewTaskPanel(DataHandler dH) {
+        this.dH = dH;
         backgroundColor = new Color(50, 50, 50);
         redFontColor = new Color(255,100,100);  //Color for "invalid data" message
         setLayout(new BorderLayout());
@@ -172,7 +174,7 @@ public class NewTaskPanel extends JPanel {
         titleTextArea.setLineWrap(true);
         titleTextArea.setWrapStyleWord(true);
         titleTextArea.setMinimumSize(new Dimension(0, 60));
-        titleTextArea.setMaximumSize(new Dimension(9999, 60));
+        titleTextArea.setMaximumSize(new Dimension(999, 60));
         c.insets = new Insets(0,0,20, 0);
         c.gridy++;
         panel.add(titleTextArea,c);
@@ -201,6 +203,7 @@ public class NewTaskPanel extends JPanel {
         panel.add(descriptionTextArea,c);
 
         MainButton cancelButton = new MainButton("Cancel");
+        cancelButton.addActionListener(ListenerFactory.createCancelNewTaskListener(dH));
         c.insets = new Insets(0,0,0, 0);
         c.gridy++;
         c.gridwidth = 2;

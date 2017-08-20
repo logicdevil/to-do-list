@@ -2,6 +2,8 @@ package com.logicdevil.todolist;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
@@ -102,6 +104,7 @@ public class MainPanel extends JPanel {
         bottomPanel = new JPanel(new GridBagLayout());
         bottomPanel.setBackground(new Color(50,50,50));
         MainButton newTask = new MainButton("Create new task");
+        newTask.addActionListener(ListenerFactory.createNewTaskListener(dH));
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;

@@ -12,8 +12,8 @@ import java.util.concurrent.TimeUnit;
  * Created by daymond on 7/26/17.
  */
 public class ToDoList {
-    MainPanel mainPanel;
     DataHandler dH;
+    MainPanel mainPanel;
     public static void main(String[] args) {
         ToDoList controller = new ToDoList();
         controller.init();
@@ -29,21 +29,18 @@ public class ToDoList {
         // time to wait before dismissing tooltip (but overridden if
         // mouse moves outside of components bounds)
         toolTipManager.setDismissDelay(20000);
-        // time to wait before stop immediately showing tooltip when mouse re-enters component (hard to understand)
+        // time to wait before stop immediately showing tooltip when mouse re-enters component (hard to explain)
         toolTipManager.setReshowDelay(100);
         JFrame mainFrame = new JFrame("TODO List by logicdevil");
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainFrame.setSize(500, 700);
         mainFrame.setResizable(false);
-        dH = new DataHandler();
-        //mainPanel = new MainPanel(dH);
-        //mainFrame.add(mainPanel);
-
-        NewTaskPanel newTaskPanel = new NewTaskPanel();
-        mainFrame.add(newTaskPanel);
-
-
+        dH = new DataHandler(mainFrame);
+        mainPanel = new MainPanel(dH);
+        dH.setMainPanel(mainPanel);
+        mainFrame.add(mainPanel);
         mainFrame.setVisible(true);
+
     }
     void run() {
         Executors.newSingleThreadScheduledExecutor()
