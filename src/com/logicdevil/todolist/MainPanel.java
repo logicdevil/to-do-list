@@ -20,6 +20,12 @@ public class MainPanel extends JPanel {
         add(createCenterPanel(dH), BorderLayout.CENTER);
         add(createBottomPanel(dH), BorderLayout.SOUTH);
     }
+    public void update(DataHandler dH) {
+        this.removeAll();
+        add(createTopPanel(dH), BorderLayout.NORTH);
+        add(createCenterPanel(dH), BorderLayout.CENTER);
+        add(createBottomPanel(dH), BorderLayout.SOUTH);
+    }
     /*
     --------------------------------------------Create panel with tasks-----------------------
     */

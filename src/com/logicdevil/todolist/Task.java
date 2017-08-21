@@ -10,13 +10,13 @@ import java.time.format.DateTimeFormatter;
 public class Task {
     private int id;
     private LocalDate date;
-    private LocalTime time;
+    private String time;
     private String title;
     private String description;
     private int priority;
     private String frequency;
     private boolean isComplete;
-    Task(String title, String description, LocalDate date, LocalTime time, int priority, String frequency, int id) {
+    Task(String title, String description, LocalDate date, String time, int priority, String frequency, int id) {
         isComplete = false;
         this.id = id;
         this.date = date;
@@ -27,7 +27,7 @@ public class Task {
         this.frequency = frequency;
     }
     public String getTime() {
-        return time.format(DateTimeFormatter.ofPattern("HH:mm"));
+        return time;
     }
     public String getTitle() {
         return title;

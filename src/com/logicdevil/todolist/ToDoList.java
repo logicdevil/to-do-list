@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -16,10 +17,8 @@ public class ToDoList {
     MainPanel mainPanel;
     public static void main(String[] args) {
         ToDoList controller = new ToDoList();
-        controller.init();
+       controller.init();
         controller.run();
-
-
     }
 
     void init() {
