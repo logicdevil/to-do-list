@@ -1,10 +1,7 @@
 package com.logicdevil.todolist;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.util.HashMap;
 
 /**
@@ -28,9 +25,23 @@ public final class ListenerFactory {
             dH.createNewTask(map);
         };
     }
-    static ItemListener createFrequencyComboBoxListener(DataHandler dH, NewTaskLabelTemplate nTLT, JTextArea jTA, JComboBox jCB) {
+    static ItemListener createFrequencyComboBoxListener(DataHandler dH, NewTaskLabelTemplate nTLT, JTextArea jTA, JComboBox<String> jCB) {
         return (ItemEvent e) -> {
             dH.frequencyWasChanged(nTLT, jTA, jCB);
+        };
+    }
+    static WindowListener createWindowListener(DataHandler dH, JFrame frame) {
+        return new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                int confirmed = JOptionPane.showConfirmDialog(null,
+                        "Are you sure you want to exit the program?", "Exit Program Message Box",
+                        JOptionPane.YES_NO_OPTION);
+                if (confirmed == JOptionPane.YES_OPTION) {
+                    dH.removeCompletedTasks();
+                    frame.dispose();
+                    System.exit(0);
+                }
+            }
         };
     }
 }

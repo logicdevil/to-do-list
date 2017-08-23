@@ -5,12 +5,14 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 import java.awt.*;
+import java.text.Format;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.sql.*;
+import java.util.Formatter;
 import java.util.HashMap;
 
 /**
@@ -35,13 +37,48 @@ public class DataHandler {
         mainFrame.remove(newTaskPanel);
         newTaskPanel = null;
     }
+    void removeCompletedTasks() {
+        ArrayList<Integer> ids = new ArrayList<>();
+        for(JCheckBox cB : checkBoxes)
+            if(cB.isSelected())
+                ids.add(tasks.get(checkBoxes.indexOf(cB)).getId());
+        if(ids.size() != 0) {
+            StringBuilder idsString = new StringBuilder();
+            for (int id : ids)
+                idsString.append(id).append(", ");
+            idsString.delete(idsString.length() - 2, idsString.length());
+            Connection conn = null;
+            PreparedStatement ps = null;
+            try {
+                conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/to_do_list?useSSL=false", "to_do_list", "");
+                ps = conn.prepareStatement("INSERT INTO completedTasks (SELECT * FROM futureTasks WHERE task_id IN (" + idsString + "))");
+                ps.execute();
+                ps = conn.prepareStatement("DELETE FROM futureTasks WHERE task_id IN (" + idsString + ")");
+                ps.execute();
+            } catch (SQLException e) {
+                if (conn == null)
+                    JOptionPane.showMessageDialog(null, "failed to connect to database");
+                else if (ps == null)
+                    JOptionPane.showMessageDialog(null, "failed to fetch resultset");
+                else
+                    JOptionPane.showMessageDialog(null, "error: " + e.getMessage());
+            } finally {
+                if (ps != null)
+                    try { ps.close(); }
+                    catch (Exception e) { JOptionPane.showMessageDialog(null, "Can't close PreparedStatement: " + e.getMessage());  }
+                if (conn != null)
+                    try { conn.close(); }
+                    catch (Exception e) { JOptionPane.showMessageDialog(null, "Can't close Connection: " + e.getMessage()); }
+            }
+        }
+    }
     /*
     ---------------------------------Create string for tooltip text for tasks----------------------
      */
     String getToolTipText(Task t) {
         StringBuilder s = new StringBuilder("<html>" + t.getTitle() + "<br>");
         String description = t.getDescription();
-        if(description.length() > 80) {
+        if(description.length() > 80) {     //separates the description text into several parts
             String temp;
             int start = 0, end = 79;
             while (true) {
@@ -63,25 +100,26 @@ public class DataHandler {
                 end += 79;
             }
         }
+        else s.append(description).append("<br>");
         s.append("Frequency: ").append(t.getFrequency());
-        s.append(";      Priority: ").append(t.getPriority()).append("</html>");
+        s.append(";      Priority: ").append(t.getPriority());
+        s.append(";      Date:  ").append(t.getDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))).append("</html>");
         return s.toString();
     }
     /*
     -------------------------------------------Update time of topPanel's label------------------------------
      */
-    void updateDateTime(Component component) {
-        try {
-            DateTimeFormatter format = DateTimeFormatter.ofPattern("dd.MM.yyyy    HH:mm");
-            ((JLabel) component).setText(LocalDateTime.now().format(format));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    void updateDateTime(JLabel dateLabel, JLabel timeLabel) {
+        timeLabel.setText(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+        int hour = (timeLabel.getText().charAt(0) - 48) * 10 + (timeLabel.getText().charAt(1) - 48);
+        if(hour == 0)
+            dateLabel.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
     }
 
-    LocalDateTime getTime() {
-        return LocalDateTime.now();
+    LocalTime getTime() {
+        return LocalTime.now();
     }
+    LocalDate getDate() { return LocalDate.now(); }
     /*
     -------------------------------------------Create string of nearest birthdays--------------------------
      */
@@ -105,26 +143,26 @@ public class DataHandler {
         birthdays = new ArrayList<>();
         Connection conn = null;
         Statement st = null;
+        Statement st2 = null;
         ResultSet rs = null;
+        ResultSet dopRS = null;
+        PreparedStatement preparedStmt = null;
         try {
-            // Подгружаем драйвер
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
-            //export CLASSPATH=/home/daymond/Documents/Java/mysql-connector-java-5.1.43-bin.jar:$CLASSPATH
+            Class.forName("com.mysql.jdbc.Driver").newInstance();   //load the driver
         } catch (Exception e) {
-            //System.out.println("failed to load jdbc driver class");
             JOptionPane.showMessageDialog(null, "failed to load jdbc driver class");
             System.exit(0);
         }
         try {
-            // Работаем с БД
             conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/to_do_list?useSSL=false","to_do_list","");
             st = conn.createStatement();
+            st2=conn.createStatement();
             LocalDate currentDate = LocalDate.now();
             int currentDay = currentDate.getDayOfMonth(), currentMonth = currentDate.getMonthValue(), currentYear = currentDate.getYear();
             rs = st.executeQuery("SELECT * FROM futureTasks WHERE (day=" + currentDay + " AND month=" + currentMonth +
                     " AND year=" + currentYear + ") OR (year<" + currentYear + ") OR (year =" + currentYear + " AND month<" +
                     currentMonth + ") OR (year=" + currentYear + " AND month=" + currentMonth + " AND day<" + currentDay
-                    + ") ORDER BY priority");
+                    + ") ORDER BY year, month, day, priority");
             while (rs.next()) {
                 int id = rs.getInt(1);
                 String title = rs.getString(2);
@@ -159,22 +197,23 @@ public class DataHandler {
                             break;
                         default:break;
                     }
+                    dopRS = st2.executeQuery("SELECT task_id FROM futureTasks WHERE title='" + title + "' AND frequency='" + frequency +
+                    "' AND day=" + date.getDayOfMonth() + " AND month=" + date.getMonthValue() + " AND year=" + date.getYear());
+                    if(!dopRS.next()) {
+                        String query = "INSERT INTO futureTasks (title, description, priority, frequency, day, month, year, time)"
+                                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-                    String query = "INSERT INTO futureTasks (title, description, priority, frequency, day, month, year, time)"
-                            + " values (?, ?, ?, ?, ?, ?, ?, ?)";
-
-                    // create the mysql insert preparedstatement
-                    PreparedStatement preparedStmt = conn.prepareStatement(query);
-                    preparedStmt.setString (1, title);
-                    preparedStmt.setString (2, description);
-                    preparedStmt.setInt(3, priority);
-                    preparedStmt.setString(4, frequency);
-                    preparedStmt.setInt(5, date.getDayOfMonth());
-                    preparedStmt.setInt(6, date.getMonthValue());
-                    preparedStmt.setInt(7, date.getYear());
-                    preparedStmt.setString(8, time);
-                    // execute the preparedstatement
-                    preparedStmt.execute();
+                        preparedStmt = conn.prepareStatement(query);
+                        preparedStmt.setString(1, title);
+                        preparedStmt.setString(2, description);
+                        preparedStmt.setInt(3, priority);
+                        preparedStmt.setString(4, frequency);
+                        preparedStmt.setInt(5, date.getDayOfMonth());
+                        preparedStmt.setInt(6, date.getMonthValue());
+                        preparedStmt.setInt(7, date.getYear());
+                        preparedStmt.setString(8, time);
+                        preparedStmt.execute();
+                    }
                 }
             }
             LocalDate futureDate = LocalDate.now().plusMonths(1); //here will be executed birthdays
@@ -189,34 +228,37 @@ public class DataHandler {
             }
         } catch (SQLException e) {
             if (conn == null) {
-                //System.out.println("failed to connect to database");
                 JOptionPane.showMessageDialog(null, "failed to connect to database");
+                System.exit(0);
 
             } else
             if (st == null) {
-                //System.out.println("failed to create statement");
                 JOptionPane.showMessageDialog(null, "failed to create statement");
-
+                System.exit(0);
             } else
-            if (rs == null) {
-                //System.out.println("failed to fetch resultset");
+            if (rs == null || preparedStmt == null || dopRS == null) {
                 JOptionPane.showMessageDialog(null, "failed to fetch resultset");
 
             } else {
-                //System.out.println("error while fetching results");
-                JOptionPane.showMessageDialog(null, "error " + e.getMessage());
+                JOptionPane.showMessageDialog(null, "error: " + e.getMessage());
             }
 
         } finally {
-            if (rs != null) {
-                try { rs.close(); } catch (Exception e) {JOptionPane.showMessageDialog(null, "Can't close ResultSet: " + e.getMessage());}
-            }
-            if (st != null) {
-                try { st.close(); } catch (Exception e) {JOptionPane.showMessageDialog(null, "Can't close Statement: " + e.getMessage());}
-            }
-            if (conn != null) {
-                try { conn.close(); } catch (Exception e) {JOptionPane.showMessageDialog(null, "Can't close Connection: " + e.getMessage());}
-            }
+            if (rs != null)
+                try { rs.close(); }
+                catch (Exception e) {JOptionPane.showMessageDialog(null, "Can't close ResultSet: " + e.getMessage());}
+            if (dopRS != null)
+                try { dopRS.close(); }
+                catch (Exception e) {JOptionPane.showMessageDialog(null, "Can't close ResultSet2: " + e.getMessage());}
+            if (preparedStmt != null)
+                try { preparedStmt.close(); }
+                catch (Exception e) {JOptionPane.showMessageDialog(null, "Can't close PreparedStatement: " + e.getMessage());}
+            if (st != null)
+                try { st.close(); }
+                catch (Exception e) {JOptionPane.showMessageDialog(null, "Can't close Statement: " + e.getMessage());}
+            if (conn != null)
+                try { conn.close(); }
+                catch (Exception e) {JOptionPane.showMessageDialog(null, "Can't close Connection: " + e.getMessage());}
         }
         return tasks;
     }
@@ -243,14 +285,12 @@ public class DataHandler {
         if(LocalDate.of(year, month, day).isBefore(LocalDate.now())) {
             isCanBeCreated = false;
             (map.get("invalidDateLabel")).setForeground(new Color(255,100,100));
-            ((JLabel)map.get("invalidDateLabel")).setText("Incorrect date");
         }
         else (map.get("invalidDateLabel")).setForeground(new Color(50, 50, 50));
 
         String frequency = ((JComboBox<String>)map.get("frequencyComboBox")).getSelectedItem().toString();
         boolean isBirthday = ("birthday".equals(frequency));
         int priority = Integer.parseInt(((JComboBox<String>)map.get("priorityComboBox")).getSelectedItem().toString().substring(0, 1));
-
         String title = ((JTextArea)map.get("titleTextArea")).getText();
         String description = ((JTextArea)map.get("descriptionTextArea")).getText();
         description = description.substring(0, (description.length() > 400) ? 400 : description.length());
@@ -260,12 +300,13 @@ public class DataHandler {
             Connection conn = null;
             Statement st = null;
             ResultSet rs = null;
-            try {
+            PreparedStatement preparedStmt = null;
+           /* try {
                 Class.forName("com.mysql.jdbc.Driver").newInstance();
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "failed to load jdbc driver class");
                 System.exit(0);
-            }
+            }*/
             try {
                 conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/to_do_list?useSSL=false","to_do_list","");
                 st = conn.createStatement();
@@ -282,7 +323,7 @@ public class DataHandler {
                         String query = "INSERT INTO futureTasks (title, description, priority, frequency, day, month, year, time)"
                                 + " values (?, ?, ?, ?, ?, ?, ?, ?)";
 
-                        PreparedStatement preparedStmt = conn.prepareStatement(query);
+                        preparedStmt = conn.prepareStatement(query);
                         preparedStmt.setString (1, title);
                         preparedStmt.setString (2, description);
                         preparedStmt.setInt(3, priority);
@@ -310,17 +351,21 @@ public class DataHandler {
                     JOptionPane.showMessageDialog(null, "error " + e.getMessage());
             } finally {
                 if (rs != null)
-                    try { rs.close(); } catch (Exception e) {JOptionPane.showMessageDialog(null, "Can't close ResultSet: " + e.getMessage());}
-
+                    try { rs.close(); }
+                    catch (Exception e) {JOptionPane.showMessageDialog(null, "Can't close ResultSet: " + e.getMessage());}
+                if (preparedStmt != null)
+                    try { preparedStmt.close(); }
+                    catch (Exception e) {JOptionPane.showMessageDialog(null, "Can't close PreparedStatement: " + e.getMessage());}
                 if (st != null)
-                    try { st.close(); } catch (Exception e) {JOptionPane.showMessageDialog(null, "Can't close Statement: " + e.getMessage());}
-
+                    try { st.close(); }
+                    catch (Exception e) {JOptionPane.showMessageDialog(null, "Can't close Statement: " + e.getMessage());}
                 if (conn != null)
-                    try { conn.close(); } catch (Exception e) {JOptionPane.showMessageDialog(null, "Can't close Connection: " + e.getMessage());}
+                    try { conn.close(); }
+                    catch (Exception e) {JOptionPane.showMessageDialog(null, "Can't close Connection: " + e.getMessage());}
             }
         }
-
     }
+
     void frequencyWasChanged(NewTaskLabelTemplate titleLabel, JTextArea titleTextArea, JComboBox<String> frequencyComboBox) {
         if("birthday".equals(frequencyComboBox.getSelectedItem().toString())) {
             titleLabel.setText("Enter the name and (or) the surname (up to 20 symbols):");

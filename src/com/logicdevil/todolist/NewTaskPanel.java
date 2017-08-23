@@ -119,7 +119,7 @@ public class NewTaskPanel extends JPanel {
 
         /*These labels will be displayed if the user has selected an invalid time or
                                                     date (the time in the past or the date "February 30", for example)*/
-        JLabel invalidTimeLabel = new JLabel("<html><sup><small>*</small></sup> Invalid time", JLabel.LEFT);
+        JLabel invalidTimeLabel = new JLabel("<html><sup><small>*</small></sup> Incorrect time", JLabel.LEFT);
         map.put("invalidTimeLabel", invalidTimeLabel);
         invalidTimeLabel.setFont(new Font("Serif", Font.PLAIN, 15));
         invalidTimeLabel.setForeground(backgroundColor);
@@ -128,7 +128,7 @@ public class NewTaskPanel extends JPanel {
         c.gridx++;
         panel.add(invalidTimeLabel, c);
 
-        JLabel invalidDateLabel = new JLabel("<html><sup><small>*</small></sup> Invalid date", JLabel.LEFT);
+        JLabel invalidDateLabel = new JLabel("<html><sup><small>*</small></sup> Incorrect date", JLabel.LEFT);
         map.put("invalidDateLabel", invalidDateLabel);
         invalidDateLabel.setFont(new Font("Serif", Font.PLAIN, 15));
         invalidDateLabel.setForeground(backgroundColor);

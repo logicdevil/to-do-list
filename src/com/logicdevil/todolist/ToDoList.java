@@ -5,7 +5,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -17,7 +19,7 @@ public class ToDoList {
     MainPanel mainPanel;
     public static void main(String[] args) {
         ToDoList controller = new ToDoList();
-       controller.init();
+        controller.init();
         controller.run();
     }
 
@@ -31,11 +33,12 @@ public class ToDoList {
         // time to wait before stop immediately showing tooltip when mouse re-enters component (hard to explain)
         toolTipManager.setReshowDelay(100);
         JFrame mainFrame = new JFrame("TODO List by logicdevil");
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         mainFrame.setSize(500, 700);
         mainFrame.setResizable(false);
         dH = new DataHandler(mainFrame);
         mainPanel = new MainPanel(dH);
+        mainFrame.addWindowListener(ListenerFactory.createWindowListener(dH, mainFrame));
         dH.setMainPanel(mainPanel);
         mainFrame.add(mainPanel);
         mainFrame.setVisible(true);
@@ -49,6 +52,5 @@ public class ToDoList {
     void loop() {
         mainPanel.updateDateTime(dH);
     }
-
 
 }

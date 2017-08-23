@@ -45,7 +45,10 @@ public class MainPanel extends JPanel {
             String text = (i++ + ". " + t.getTitle());
             JLabel labelTask = new JLabel(text);
             labelTask.setFont(new Font("Serif", Font.PLAIN, 15));
-            labelTask.setForeground(new Color(150,150,150));
+            if("birthday".equals(t.getFrequency()))
+                labelTask.setForeground(new Color(255, 100, 100));
+            else
+                labelTask.setForeground(new Color(150,150,150));
             labelTask.setPreferredSize(new Dimension(300,1));
             labelTask.setBorder(BorderFactory.createEmptyBorder(0,0,0,30));
             String toolTipText = dH.getToolTipText(t);
@@ -96,11 +99,15 @@ public class MainPanel extends JPanel {
     private JPanel createTopPanel(DataHandler dataHandler) {
         topPanel = new JPanel();
         topPanel.setBackground(new Color(50, 50, 50));
-        DateTimeFormatter format = DateTimeFormatter.ofPattern("dd.MM.yyyy    HH:mm");
-        JLabel label = new JLabel(dataHandler.getTime().format(format));
-        label.setFont(new Font("Serif", Font.BOLD, 45));
-        label.setForeground(new Color(150,150,150));
-        topPanel.add(label);
+        JLabel dateLabel = new JLabel(dataHandler.getDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
+        dateLabel.setFont(new Font("Serif", Font.BOLD, 45));
+        dateLabel.setForeground(new Color(150,150,150));
+        topPanel.add(dateLabel);
+        JLabel timeLabel = new JLabel(dataHandler.getTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+        timeLabel.setBorder(BorderFactory.createEmptyBorder(0,60,0,0));
+        timeLabel.setFont(new Font("Serif", Font.BOLD, 45));
+        timeLabel.setForeground(new Color(150,150,150));
+        topPanel.add(timeLabel);
         return topPanel;
     }
     /*
@@ -140,6 +147,10 @@ public class MainPanel extends JPanel {
         return bottomPanel;
     }
     void updateDateTime(DataHandler dH) {
-        dH.updateDateTime(topPanel.getComponent(0));
+        try {
+            dH.updateDateTime((JLabel)topPanel.getComponent(0), (JLabel)topPanel.getComponent(1));
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -1,3 +1,2 @@
 Add listeners to buttons "postpone the task" and "for future".
-Add close operation.
-If you start program several times, and database have not-one-time tasks - program create a new task every time. Bug.
+There is still no alarm on time
